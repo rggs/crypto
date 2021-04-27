@@ -15,17 +15,17 @@ import pickle
 import json
 
 print('web3 test:')
-web3 = Web3(Web3.HTTPProvider('https://mainnet.infura.io/v3/f5f96a3d1bc34551afddb89fdc77bbbe'))
+web3 = Web3(Web3.HTTPProvider('YOUR HTTP PROVIDER HERE'))
 
 print(str(web3.eth.blockNumber))
 
-api_key = '7N9YT4A7X2MPWHXFSHR32XMUSIENRANXKJ'
+api_key = 'YOUR ETHERSCAN API KEY HERE'
 
-factory = web3.eth.contract(address='0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95', 
-        abi=requests.get('https://api.etherscan.io/api?module=contract&action=getabi&address=0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95',
+factory = web3.eth.contract(address='0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f', 
+        abi=requests.get('https://api.etherscan.io/api?module=contract&action=getabi&address=0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f',
                      params={'apikey':api_key}).json()['result'])
 
-num_tokens = factory.functions.tokenCount().call()
+num_tokens = factory.functions.allPairsLength().call()
 
 uni_tokens = []
 
@@ -33,7 +33,7 @@ for i in range(num_tokens+1):
     add = None
     while add is None:
         try:
-            add = factory.functions.getTokenWithId(i).call()
+            add = factory.functions.allPairs(i).call()
         except:
             pass
     
@@ -63,8 +63,8 @@ for t in uni_tokens:
         +'"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}]')  # noqa: 501
             for b in types]
     
-    if t =='0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2':
-        symbol='WETH'
+    if t =='0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee':
+        symbol='ETH'
     else:  
         symbol='Error'
     
@@ -146,6 +146,7 @@ contract_dict = genContractDict(new_list)
 print('Done')
 
 
+       
         
         
     
