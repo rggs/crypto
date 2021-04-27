@@ -46,7 +46,7 @@ for i in range(num_tokens+1):
 
 def getABI(adr):
     r = requests.get('https://api.etherscan.io/api?module=contract&action=getabi&address='+adr,
-                     params={'apikey':'api_key'}).json()['result']
+                     params={'apikey':api_key}).json()['result']
     
     return r
 
@@ -67,32 +67,44 @@ for t in uni_tokens:
         symbol='ETH'
     else:  
         symbol='Error'
-    
-    # EIP20_ABI = json.loads(
-    #     '[{"constant":true,"inputs":[],"name":"name","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_spender","type":"address"},{"name":"_value","type":"uint256"}],"name":"approve","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_from","type":"address"},{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transferFrom","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"decimals","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"symbol","outputs":[{"name":"","type":"'+str(types[0])
-    #     +'"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"_to","type":"address"},{"name":"_value","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_spender","type":"address"}],"name":"allowance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Transfer","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_owner","type":"address"},{"indexed":true,"name":"_spender","type":"address"},{"indexed":false,"name":"_value","type":"uint256"}],"name":"Approval","type":"event"}]')  # noqa: 501
-    
+    token0 = 'Error'
+    token1 = 'Error'
+        
     if 'Contract source code not verified' in abi:
         for a in generic_abis:
             try:
-                symbol = web3.eth.contract(address=addy, abi=a).functions.symbol().call()
+                token0 = web3.eth.contract(address=addy, abi=a).functions.token0().call()
+                token1 = web3.eth.contract(address=addy, abi=a).functions.token1().call()
+                # symbol = web3.eth.contract(address=addy, abi=a).functions.symbol().call()
+
             except:
                 pass
     else:
         try:
-            symbol = web3.eth.contract(address=addy, abi=abi).functions.symbol().call()
+            token0 = web3.eth.contract(address=addy, abi=abi).functions.token0().call()
+            token1 = web3.eth.contract(address=addy, abi=abi).functions.token1().call()
+            # symbol = web3.eth.contract(address=addy, abi=a).functions.symbol().call()
+
         except:
             for a in generic_abis:
                 try:
-                    symbol = web3.eth.contract(address=addy, abi=a).functions.symbol().call()
+                    # symbol = web3.eth.contract(address=addy, abi=a).functions.symbol().call()
+                    token0 = web3.eth.contract(address=addy, abi=a).functions.token0().call()
+                    token1 = web3.eth.contract(address=addy, abi=a).functions.token1().call()
                 except:
                     pass
     
-    if not isinstance(symbol,str):
-        symbol=symbol.decode('utf-8').rstrip('\x00')
+    if not isinstance(token0,str):
+        token0=token0.decode('utf-8').rstrip('\x00')
+        token1=token1.decode('utf-8').rstrip('\x00')
+        
+    symbol0 = requests.get('https://api.etherscan.io/api?module=account&action=tokentx&contractaddress='+token0,
+             params={'apikey':api_key}).json()['result'][0]['tokenSymbol']
+    symbol1 = requests.get('https://api.etherscan.io/api?module=account&action=tokentx&contractaddress='+token1,
+             params={'apikey':api_key}).json()['result'][0]['tokenSymbol']
     
-    LIST.append([symbol, addy, abi])
-    sys.stdout.write('\r'+symbol+', '+str(uni_tokens.index(t))+'                                    ')
+    LIST.append([symbol0+'/'+symbol1, addy, abi])
+    sys.stdout.write('\r'+symbol0+'/'+symbol1+', '+str(uni_tokens.index(t))+'                                    ')
     sys.stdout.flush()
     
     time.sleep(0.21) #DODGE THE ETHERSCAN API LIMIT
@@ -125,14 +137,6 @@ def genContractDict(abi_list):
         
         contracts[t[0]]={'token':t[0], 'exch_add':exch_add}
         
-        # if t[0] != 'ETH':
-        #     abi = getABI(exch_add)
-        #     contract = web3.eth.contract(address=exch_add, abi=abi)
-        #     contracts[t[0]]={'token':t[0], 'contract':contract}
-        # else:
-        #     contracts[t[0]]={'token':t[0], 'contract':t[2]}
-            
-        #time.sleep(0.21)
         
     with open('contracts_dict.pickle', 'wb') as handle:
         pickle.dump(contracts, handle, protocol=pickle.HIGHEST_PROTOCOL)
@@ -144,6 +148,7 @@ def genContractDict(abi_list):
 contract_dict = genContractDict(new_list)
 
 print('Done')
+
 
 
        
