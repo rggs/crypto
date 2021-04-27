@@ -16,7 +16,7 @@ import asyncio
 import nest_asyncio
 
 print('web3 test:')
-web3 = Web3(Web3.HTTPProvider('PUT YOUR HTTP PROVIDER HERE'))
+web3 = Web3(Web3.HTTPProvider('https://mainnet.infura.io/v3/f5f96a3d1bc34551afddb89fdc77bbbe'))
 
 print(web3.eth.blockNumber)
 
@@ -129,13 +129,15 @@ async def asynch_search():
     arbitrages=[]
     names=[i for i in tokens]
 
-
+    #def getArbitrage(tokens):
     arbitrages=[]
     majors=['ETH','USDT','DAI','USDC', 'BAL', 'COMP', 'UNI', 'LEND']
-
+    #for i in range(len(tokens)):
+    #tok1=names[i]
     
     #wETH Address:
     tok1='0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+    #j=i
     coros = asyncio.get_event_loop()
     
     with ThreadPoolExecutor(max_workers=100) as executor:
